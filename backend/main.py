@@ -937,7 +937,7 @@ def execute_trade(req: ExecuteRequest):
     return {"status": "success", "executed_action": act, "net_asset_value": nav}
 
 
-@app.get("/")
+@app.api_route("/", methods=["GET", "HEAD"])
 def root():
     return {"status": "running"}
 
