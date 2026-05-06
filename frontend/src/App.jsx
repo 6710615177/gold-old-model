@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef } from "react";
 import ThaiGoldChart from "./ThaiGoldChart";
+import { API_BASE_URL } from "./config"
 
 function getSignalIcon(signal) {
   if (signal === "BUY") return "▲";
@@ -64,7 +65,7 @@ export default function App() {
 
   async function getDashboard() {
     try {
-      const res = await fetch("/api/status");
+      const res = await fetch(`${API_BASE_URL}/api/chart`)
       if (res.ok) setDashboard(await res.json());
     } catch (err) { console.error("Error fetching dashboard", err); }
   }

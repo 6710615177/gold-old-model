@@ -13,6 +13,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
 from groq import Groq
+from fastapi.middleware.cors import CORSMiddleware
 
 import lstm_model
 from analytics_engine import AdvancedTradingAnalytics, parse_logs_to_metrics
@@ -82,6 +83,13 @@ def send_discord_alert(action: str, reasons: list, price=None):
 # 1. MASTER CONFIGURATION
 # =====================================================================
 app = FastAPI(title="Advanced AI Trading API")
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 api_router = APIRouter(prefix="/api")
 
 
