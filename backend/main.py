@@ -951,26 +951,54 @@ app.include_router(api_router)
 @app.get("/hsh-api/{path:path}")
 def proxy_hsh(path: str):
     url = f"https://apicheckpricev3.huasengheng.com/{path}"
+
     try:
-        return requests.get(
-            url, headers={"User-Agent": "Mozilla/5.0"}, timeout=5
-        ).json()
-    except:
-        return {}
+        response = requests.get(url, headers={"User-Agent": "Mozilla/5.0"}, timeout=10)
+
+        return response.json()
+
+    except Exception as e:
+        return {"error": str(e)}
 
 
 FRONTEND_DIST = os.path.abspath(
     os.path.join(os.path.dirname(__file__), "..", "frontend", "dist")
 )
-if os.path.exists(FRONTEND_DIST):
-    app.mount(
-        "/assets",
-        StaticFiles(directory=os.path.join(FRONTEND_DIST, "assets")),
-        name="assets",
-    )
 
-    @app.get("/{full_path:path}")
-    async def serve_frontend(full_path: str):
-        if full_path.startswith("api/") or full_path.startswith("hsh-api/"):
-            raise HTTPException(status_code=404)
-        return FileResponse(os.path.join(FRONTEND_DIST, "index.html"))
+# mount assets
+assets_dir = os.path.join(FRONTEND_DIST, "assets")
+
+if os.path.exists(assets_dir):
+    app.mount("/assets", StaticFiles(directory=assets_dir), name="assets")
+
+
+# React/Vite SPA fallback
+@app.get("/{full_path:path}")
+async def serve_frontend(full_path: str):
+
+    # กันไม่ให้ route api โดน fallback
+    if full_path.startswith("api") or full_path.startswith("hsh-api"):
+        raise HTTPException(status_code=404)
+
+    index_file = os.path.join(FRONTEND_DIST, "index.html")
+
+    if os.path.exists(index_file):
+        return FileResponse(index_file)
+
+    return {"message": "Frontend not built yet"}
+
+
+# =====================================================================
+# 6. START SERVER (IMPORTANT FOR RENDER)
+# =====================================================================
+
+if __name__ == "__main__":
+    import uvicorn
+
+    port = int(os.environ.get("PORT", 8000))
+
+    uvicorn.run(
+        "main:app",  # เปลี่ยนตามชื่อไฟล์ ถ้าไฟล์ไม่ใช่ main.py
+        host="0.0.0.0",
+        port=port,
+    )
