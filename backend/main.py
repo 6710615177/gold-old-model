@@ -842,14 +842,6 @@ def manual_trade(req: ManualTradeRequest):
         return result
 
 
-@api_router.post("/analyze")
-def trigger_analysis():
-    result = run_ai_analysis_logic()
-    if not result:
-        return {"error": "Market Offline"}
-    return result
-
-
 @api_router.post("/execute")
 def execute_trade(req: ExecuteRequest):
     global pending_signal
@@ -935,6 +927,11 @@ def execute_trade(req: ExecuteRequest):
     # 🎯 เคลียร์สัญญาณหลังจากตัดสินใจเรียบร้อยแล้ว
     pending_signal = None
     return {"status": "success", "executed_action": act, "net_asset_value": nav}
+
+
+@app.get("/")
+def root():
+    return {"status": "running"}
 
 
 app.include_router(api_router)
