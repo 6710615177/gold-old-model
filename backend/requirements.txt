@@ -1,0 +1,12 @@
+fastapi
+uvicorn
+requests
+feedparser
+pandas
+numpy
+yfinance
+groq
+python-dotenv
+scikit-learn
+tensorflow
+holidays
