@@ -1,6 +1,8 @@
 import React, { useEffect, useState, useRef } from "react";
 import ThaiGoldChart from "./ThaiGoldChart";
-import { API_BASE_URL } from "./config"
+
+
+const API_BASE_URL = import.meta.env.VITE_API_URL;
 
 function getSignalIcon(signal) {
   if (signal === "BUY") return "▲";
