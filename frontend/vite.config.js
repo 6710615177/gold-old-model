@@ -1,3 +1,6 @@
-const API_BASE = import.meta.env.VITE_API_URL || ""
+import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react'
 
-fetch(`${API_BASE}/api/status`)
+export default defineConfig({
+  plugins: [react()]
+})
