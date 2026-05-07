@@ -9,14 +9,17 @@ import numpy as np
 import yfinance as yf
 from datetime import datetime, time as dt_time, timedelta
 from fastapi import FastAPI, APIRouter, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
 from groq import Groq
-from fastapi.middleware.cors import CORSMiddleware
+
 
 import lstm_model
 from analytics_engine import AdvancedTradingAnalytics, parse_logs_to_metrics
+
+api_router = APIRouter(prefix="/api")
 
 # discord#
 DISCORD_BUY_WEBHOOK_URL = os.getenv("DISCORD_BUY_WEBHOOK_URL")
@@ -85,7 +88,21 @@ def send_discord_alert(action: str, reasons: list, price=None):
 
 app = FastAPI()
 
-# ✅ สำคัญมาก ต้องมีตัวนี้
+# ================= CORS =================
+origins = [
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+    "https://tradetong-paaruay.netlify.app",
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 api_router = APIRouter(prefix="/api")
 
 
