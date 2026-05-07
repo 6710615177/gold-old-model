@@ -57,7 +57,7 @@ export default function App() {
 
   async function fetchNews() {
     try {
-      const res = await fetch("/api/news");
+      const res = await fetch(`${API_BASE_URL}/api/news`);
       if (res.ok) {
         const data = await res.json();
         setNews(data.news || []);
@@ -119,7 +119,7 @@ export default function App() {
       });
       saveHistory(
         userAction === "TIMEOUT" ? aiData.ai_action : userAction,
-        aiData.ai_reason 
+        aiData.ai_reason
       );
       setAiData(null);
       setTimeLeft(0);
@@ -199,11 +199,11 @@ export default function App() {
 
   return (
     <div style={{ maxWidth: "1200px", margin: "0 auto", padding: "20px 15px", fontFamily: "sans-serif", background: "#FAF3E1", color: "#222", minHeight: "100vh", boxSizing: "border-box" }}>
-      
+
       {/* Header */}
       <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "space-between", alignItems: "flex-start", gap: "15px", marginBottom: "20px" }}>
         <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-          <h1 style={{ color: "#7B542F", margin: 0, lineHeight: "1.5", fontSize: "clamp(24px, 4vw, 36px)"}}>
+          <h1 style={{ color: "#7B542F", margin: 0, lineHeight: "1.5", fontSize: "clamp(24px, 4vw, 36px)" }}>
             เทรดทองพารวย
           </h1>
           <p style={{ margin: 0, color: "#555", fontSize: "16px" }}>
@@ -236,12 +236,12 @@ export default function App() {
           </div>
         </div>
       )}
-      
+
       <div style={{ display: "flex", gap: "20px", flexWrap: "wrap", flexDirection: "row" }}>
-        
+
         {/* Left Column: Chart & History */}
         <div style={{ flex: "2 1 60%", minWidth: "300px" }}>
-          
+
           {/* Gold Price Chart */}
           <div style={{ background: "#F5E7C6", borderRadius: "12px", padding: "15px", marginBottom: "20px" }}>
             <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "space-between", alignItems: "center", marginBottom: "15px", gap: "10px" }}>
@@ -265,8 +265,8 @@ export default function App() {
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "15px" }}>
               <h2 style={{ color: "#7B542F", margin: 0 }}>ประวัติการทำรายการ (Local)</h2>
               {history.length > 5 && (
-                <button 
-                  onClick={() => setShowAllHistory(!showAllHistory)} 
+                <button
+                  onClick={() => setShowAllHistory(!showAllHistory)}
                   style={{ background: "transparent", color: "#155fa0", border: "1px solid #155fa0", padding: "5px 12px", borderRadius: "6px", cursor: "pointer", fontWeight: "bold" }}
                 >
                   {showAllHistory ? "ซ่อนรายการ" : `ดูทั้งหมด (${history.length})`}
@@ -377,16 +377,16 @@ export default function App() {
                 กดได้ตลอดเวลาตลอดการซื้อขาย
               </p>
               <div style={{ display: "flex", gap: "10px" }}>
-                <button 
-                  onClick={() => manualTrade("BUY")} 
-                  style={{ 
-                    flex: 1, 
-                    padding: "15px", 
-                    background: "#00c853", 
-                    color: "#fff", 
-                    border: "none", 
-                    borderRadius: "8px", 
-                    fontWeight: "bold", 
+                <button
+                  onClick={() => manualTrade("BUY")}
+                  style={{
+                    flex: 1,
+                    padding: "15px",
+                    background: "#00c853",
+                    color: "#fff",
+                    border: "none",
+                    borderRadius: "8px",
+                    fontWeight: "bold",
                     cursor: "pointer",
                     fontSize: "16px",
                     transition: "background-color 0.2s"
@@ -396,16 +396,16 @@ export default function App() {
                 >
                   🛒 BUY ทอง
                 </button>
-                <button 
-                  onClick={() => manualTrade("SELL")} 
-                  style={{ 
-                    flex: 1, 
-                    padding: "15px", 
-                    background: "#d32f2f", 
-                    color: "#fff", 
-                    border: "none", 
-                    borderRadius: "8px", 
-                    fontWeight: "bold", 
+                <button
+                  onClick={() => manualTrade("SELL")}
+                  style={{
+                    flex: 1,
+                    padding: "15px",
+                    background: "#d32f2f",
+                    color: "#fff",
+                    border: "none",
+                    borderRadius: "8px",
+                    fontWeight: "bold",
                     cursor: "pointer",
                     fontSize: "16px",
                     transition: "background-color 0.2s"
@@ -437,7 +437,7 @@ export default function App() {
               </div>
             </div>
           )}
-          
+
           {!aiData && dashboard && dashboard.period && dashboard.period.is_active && (
             <div style={{ padding: "15px", background: "transparent", color: "#888", border: "2px dashed #ccc", borderRadius: "8px", textAlign: "center", fontSize: "14px" }}>
               ระบบกำลังรอสัญญาณจาก AI...
