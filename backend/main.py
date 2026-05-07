@@ -951,6 +951,13 @@ def execute_trade(req: ExecuteRequest):
     pending_signal = None
     return {"status": "success", "executed_action": act, "net_asset_value": nav}
 
+@app.get("/")
+def root():
+    return {"status": "ok"}
+
+@app.get("/health")
+def health():
+    return {"healthy": True}
 
 app.include_router(api_router)
 
