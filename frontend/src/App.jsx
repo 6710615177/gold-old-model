@@ -67,7 +67,7 @@ export default function App() {
 
   async function getDashboard() {
     try {
-      const res = await fetch(`${API_BASE_URL}/api/chart`)
+      const res = await fetch(`${API_BASE_URL}/api/status`)
       if (res.ok) setDashboard(await res.json());
     } catch (err) { console.error("Error fetching dashboard", err); }
   }
@@ -91,7 +91,7 @@ export default function App() {
       // ถ้ากำลังโชว์กล่องตัดสินใจอยู่ หรือตลาดปิด ไม่ต้องดึงกวน
       if (aiData || (dashboard && dashboard.period && !dashboard.period.is_active)) return;
       try {
-        const res = await fetch("/api/pending-signal");
+        const res = await fetch(`${API_BASE_URL}/api/pending-signal`);
         const data = await res.json();
         if (data && data.signal) {
           setAiData(data.signal);
@@ -107,7 +107,7 @@ export default function App() {
   const submitDecision = async (userAction) => {
     if (!aiData) return;
     try {
-      await fetch("/api/execute", {
+      await await fetch(`${API_BASE_URL}/api/execute`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -129,7 +129,7 @@ export default function App() {
 
   const manualTrade = async (action) => {
     try {
-      const response = await fetch("/api/manual-trade", {
+      const response = await fetch(`${API_BASE_URL}/api/manual-trade`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -155,7 +155,7 @@ export default function App() {
 
   const savePortfolio = async () => {
     try {
-      await fetch("/api/portfolio", {
+      await fetch(`${API_BASE_URL}/api/portfolio`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

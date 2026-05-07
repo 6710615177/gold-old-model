@@ -85,11 +85,14 @@ def send_discord_alert(action: str, reasons: list, price=None):
 app = FastAPI(title="Advanced AI Trading API")
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=[
+        "https://cheerful-maamoul-5640bf.netlify.app"
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
 api_router = APIRouter(prefix="/api")
 
 

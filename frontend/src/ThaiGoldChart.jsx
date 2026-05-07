@@ -1,7 +1,9 @@
 ﻿import React, { useState, useEffect, useRef } from "react";
 import { Line } from "react-chartjs-2";
 import Chart from "chart.js/auto";
-import 'chartjs-adapter-date-fns';
+import "chartjs-adapter-date-fns";
+
+const API_BASE_URL = import.meta.env.VITE_API_URL;
 
 const FIXED_WINDOW_MINUTES = 240;
 const STEP_MINUTES = 5;
@@ -11,7 +13,7 @@ function parseLocalTimestamp(timestamp) {
   if (!timestamp || typeof timestamp !== "string") return null;
 
   const exactMatch = timestamp.match(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}$/);
-  const shortMatch = timestamp.match(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/);
+  const shortMatch = timestamp.match(/^\d{4}-\d{2}-\d{2}T\d{2}$/);
 
   if (exactMatch) {
     const [datePart, timePart] = timestamp.split("T");
@@ -41,18 +43,28 @@ function roundDownTo5Minutes(date) {
 
 function buildTimeLabels(endTime) {
   const labels = [];
-  const startTime = new Date(endTime.getTime() - FIXED_WINDOW_MINUTES * 60_000);
-  for (let cursor = new Date(startTime); cursor.getTime() <= endTime.getTime(); cursor.setMinutes(cursor.getMinutes() + STEP_MINUTES)) {
+  const startTime = new Date(
+    endTime.getTime() - FIXED_WINDOW_MINUTES * 60_000
+  );
+
+  for (
+    let cursor = new Date(startTime);
+    cursor.getTime() <= endTime.getTime();
+    cursor.setMinutes(cursor.getMinutes() + STEP_MINUTES)
+  ) {
     labels.push(new Date(cursor));
   }
+
   return labels;
 }
 
 function getMsToNextMinute() {
   const now = new Date();
   const target = new Date(now);
+
   target.setSeconds(0, 0);
   target.setMinutes(target.getMinutes() + 1);
+
   return target.getTime() - now.getTime();
 }
 
@@ -60,9 +72,16 @@ function normalizeChartData(raw) {
   const normalized = raw.reduce((acc, item) => {
     const timestamp = parseLocalTimestamp(item.timestamp);
     const price = Number(item.price);
+
     if (!timestamp || Number.isNaN(price)) return acc;
+
     const rounded = roundDownTo5Minutes(timestamp).getTime();
-    acc.push({ timestamp: rounded, price });
+
+    acc.push({
+      timestamp: rounded,
+      price,
+    });
+
     return acc;
   }, []);
 
@@ -70,35 +89,69 @@ function normalizeChartData(raw) {
   const labels = buildTimeLabels(endTime);
 
   if (labels.length === 0) {
-    return { labels: [], prices: [], latestRaw: null };
+    return {
+      labels: [],
+      prices: [],
+      latestRaw: null,
+    };
   }
 
   normalized.sort((a, b) => a.timestamp - b.timestamp);
+
   const priceMap = new Map();
-  normalized.forEach((point) => priceMap.set(point.timestamp, point.price));
+
+  normalized.forEach((point) => {
+    priceMap.set(point.timestamp, point.price);
+  });
 
   const firstLabelTime = labels[0].getTime();
+
   let lastKnownPrice = null;
-  const priorPoints = normalized.filter((point) => point.timestamp < firstLabelTime);
+
+  const priorPoints = normalized.filter(
+    (point) => point.timestamp < firstLabelTime
+  );
+
   if (priorPoints.length > 0) {
     lastKnownPrice = priorPoints[priorPoints.length - 1].price;
   } else {
-    const firstInside = normalized.find((point) => point.timestamp >= firstLabelTime && point.timestamp <= endTime.getTime());
-    if (firstInside) lastKnownPrice = firstInside.price;
+    const firstInside = normalized.find(
+      (point) =>
+        point.timestamp >= firstLabelTime &&
+        point.timestamp <= endTime.getTime()
+    );
+
+    if (firstInside) {
+      lastKnownPrice = firstInside.price;
+    }
   }
 
   const prices = labels.map((label) => {
     const timestamp = label.getTime();
-    const price = priceMap.has(timestamp) ? priceMap.get(timestamp) : lastKnownPrice;
-    if (price != null) lastKnownPrice = price;
+
+    const price = priceMap.has(timestamp)
+      ? priceMap.get(timestamp)
+      : lastKnownPrice;
+
+    if (price != null) {
+      lastKnownPrice = price;
+    }
+
     return price != null ? price : 0;
   });
 
-  return { labels, prices, latestRaw: normalized.length ? normalized[normalized.length - 1] : null };
+  return {
+    labels,
+    prices,
+    latestRaw: normalized.length
+      ? normalized[normalized.length - 1]
+      : null,
+  };
 }
 
 export default function ThaiGoldChart({ onPriceUpdate }) {
   const chartRef = useRef();
+
   const [chartLabels, setChartLabels] = useState([]);
   const [chartPrices, setChartPrices] = useState([]);
 
@@ -108,20 +161,42 @@ export default function ThaiGoldChart({ onPriceUpdate }) {
 
     const fetchChartData = async () => {
       try {
-        const res = await fetch(`/api/chart?t=${Date.now()}`);
+        const res = await fetch(
+          `${API_BASE_URL}/api/chart?t=${Date.now()}`
+        );
+
+        if (!res.ok) {
+          throw new Error(`HTTP ${res.status}`);
+        }
+
         const json = await res.json();
-        if (!json || json.status !== "success" || !Array.isArray(json.data)) return;
+
+        if (
+          !json ||
+          json.status !== "success" ||
+          !Array.isArray(json.data)
+        ) {
+          return;
+        }
 
         const { labels, prices } = normalizeChartData(json.data);
+
         setChartLabels(labels);
         setChartPrices(prices);
 
         if (onPriceUpdate && json.data.length > 0) {
           const latest = json.data[json.data.length - 1];
-          onPriceUpdate({ buy: parseFloat(latest.buy), sell: parseFloat(latest.price) });
+
+          onPriceUpdate({
+            buy: parseFloat(latest.buy),
+            sell: parseFloat(latest.price),
+          });
         }
       } catch (err) {
-        console.error("Error fetching chart data from backend:", err);
+        console.error(
+          "Error fetching chart data from backend:",
+          err
+        );
       }
     };
 
@@ -129,9 +204,14 @@ export default function ThaiGoldChart({ onPriceUpdate }) {
 
     const scheduleRefresh = () => {
       const msToNextMinute = getMsToNextMinute();
+
       timeoutId = window.setTimeout(() => {
         fetchChartData();
-        intervalId = window.setInterval(fetchChartData, REFRESH_INTERVAL_MS);
+
+        intervalId = window.setInterval(
+          fetchChartData,
+          REFRESH_INTERVAL_MS
+        );
       }, msToNextMinute);
     };
 
@@ -145,42 +225,64 @@ export default function ThaiGoldChart({ onPriceUpdate }) {
 
   const chartData = {
     labels: chartLabels,
-    datasets: [{
-      data: chartPrices,
-      borderColor: "#eab308",
-      backgroundColor: "rgba(234,179,8,0.15)",
-      fill: true,
-      tension: 0.2,
-    }]
+    datasets: [
+      {
+        data: chartPrices,
+        borderColor: "#eab308",
+        backgroundColor: "rgba(234,179,8,0.15)",
+        fill: true,
+        tension: 0.2,
+      },
+    ],
   };
-  
 
   const chartOptions = {
     responsive: true,
     maintainAspectRatio: false,
-    plugins: { legend: { display: false } },
+    plugins: {
+      legend: {
+        display: false,
+      },
+    },
     scales: {
       x: {
         type: "time",
         time: {
           unit: "minute",
           stepSize: STEP_MINUTES,
-          displayFormats: { minute: "HH:mm" }
+          displayFormats: {
+            minute: "HH:mm",
+          },
         },
-        min: chartLabels.length ? chartLabels[0] : undefined,
-        max: chartLabels.length ? chartLabels[chartLabels.length - 1] : undefined,
+        min: chartLabels.length
+          ? chartLabels[0]
+          : undefined,
+        max: chartLabels.length
+          ? chartLabels[chartLabels.length - 1]
+          : undefined,
         ticks: {
           autoSkip: true,
           maxRotation: 0,
-          maxTicksLimit: 12
-        }
-      }
-    }
+          maxTicksLimit: 12,
+        },
+      },
+    },
   };
 
   return (
-    <div style={{ height: "300px", width: "100%", padding: "10px", boxSizing: "border-box" }}>
-      <Line ref={chartRef} data={chartData} options={chartOptions} />
+    <div
+      style={{
+        height: "300px",
+        width: "100%",
+        padding: "10px",
+        boxSizing: "border-box",
+      }}
+    >
+      <Line
+        ref={chartRef}
+        data={chartData}
+        options={chartOptions}
+      />
     </div>
   );
 }

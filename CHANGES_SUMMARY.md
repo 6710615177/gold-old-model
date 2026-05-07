@@ -140,7 +140,7 @@
    useEffect(() => {
      const checkPendingSignal = async () => {
        if (aiData || (dashboard && !dashboard.period.is_active)) return;
-       const res = await fetch("/api/pending-signal");
+       const res = await fetch(`${API_BASE_URL}/api/pending-signal`);
        const data = await res.json();
        if (data.signal) {
          setAiData(data.signal);
