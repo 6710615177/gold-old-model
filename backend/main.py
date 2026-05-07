@@ -82,17 +82,10 @@ def send_discord_alert(action: str, reasons: list, price=None):
 # =====================================================================
 # 1. MASTER CONFIGURATION
 # =====================================================================
-app = FastAPI(title="Advanced AI Trading API")
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=[
-        "https://cheerful-maamoul-5640bf.netlify.app"
-    ],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
 
+app = FastAPI()
+
+# ✅ สำคัญมาก ต้องมีตัวนี้
 api_router = APIRouter(prefix="/api")
 
 
@@ -107,7 +100,9 @@ GROQ_API_KEYS = [
 GROQ_API_KEYS = [k for k in GROQ_API_KEYS if k.strip() != ""]
 
 ENABLE_UNIVERSITY_API = False
-TEAM_API_KEY = "6e2755d365cb0e408024ddaca46aadf28756bd9c2a7481de70c82adeff2b436c"
+TEAM_API_KEY = os.getenv("TEAM_API_KEY")
+LAST_SIGNAL_FILE = "last_signal.json"
+
 LOG_BASE_URL = "https://goldtrade-logs-api.poonnatuch.workers.dev"
 
 STARTING_THB = 1500.00
@@ -940,11 +935,6 @@ def execute_trade(req: ExecuteRequest):
     return {"status": "success", "executed_action": act, "net_asset_value": nav}
 
 
-@app.api_route("/", methods=["GET", "HEAD"])
-def root():
-    return {"status": "running"}
-
-
 app.include_router(api_router)
 
 
@@ -1000,8 +990,4 @@ if __name__ == "__main__":
 
     port = int(os.environ.get("PORT", 8000))
 
-    uvicorn.run(
-        "main:app",  # เปลี่ยนตามชื่อไฟล์ ถ้าไฟล์ไม่ใช่ main.py
-        host="0.0.0.0",
-        port=port,
-    )
+    uvicorn.run("main:app", host="0.0.0.0", port=port, reload=False)
